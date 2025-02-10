@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Menu</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="admin-menu" class="admin-container" style="display: none;">
+        
+        <!-- Halaman Daftar Pemain -->
+        <div id="player-list">
+            <h2>Player List</h2>
+            <div class="grid-container" id="players"></div>
+        </div>
+
+        <!-- Halaman Action -->
+        <div id="player-actions" style="display: none;">
+            <h2>Actions for <span id="selected-player"></span> (ID: <span id="selected-player-id"></span>)</h2>
+            <div class="button-container">
+                <button onclick="sendAction('spectate')">🎥 Spectate</button>
+                <button onclick="sendAction('kill')">💀 Kill</button>
+                <button onclick="sendAction('revive')">❤️ Revive</button>
+                <button onclick="sendAction('kick')">👢 Kick</button>
+                <button onclick="banPlayer(document.getElementById('selected-player').textContent)">🚫 Ban</button>
+                <button onclick="sendAction('bring')">🔄 Bring</button>
+                <button onclick="sendAction('goto')">🚀 Go To</button>
+                <button id="freeze-button" onclick="sendAction('freezeToggle')">❄️ Freeze</button>
+                <button onclick="sendAction('heal')">❤️ Heal</button>
+                <button onclick="openWarnForm()">⚠️ Warn</button>
+
+                <button onclick="goBack()">🔙 Back</button>
+            </div>
+        </div>
+
+    </div>
+        <div id="warning-overlay" class="warning-hidden">
+            <div class="warning-content">
+                <h1>⚠️ WARNING! ⚠️</h1>
+                <p id="warning-reason">No reason provided</p>
+                
+                <!-- Countdown Timer di dalam Warning -->
+                <div id="warning-timer">Wait for 10s <p id="warning-admin">Warning by: Unknown</p></div>
+
+                <div class="warning-footer">
+                    <p id="warning-admin">Warning by: Unknown</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="script.js"></script>
+
+</body>
+</html>
+

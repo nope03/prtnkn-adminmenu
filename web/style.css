@@ -1,0 +1,192 @@
+/* General Styling */
+body {
+    display: none;
+    margin: 0;
+    padding: 0;
+    background: rgba(0, 0, 0, 0.7);
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    font-family: Arial, sans-serif;
+    color: white;
+}
+
+/* Player List Grid */
+.grid-container {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.grid-item {
+    background: #444;
+    padding: 10px;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    text-align: center;
+}
+
+.grid-item:hover {
+    background: #666;
+}
+
+/* Tampilkan body saat Admin Menu aktif */
+body.active {
+    display: flex;
+}
+
+/* Admin Menu Container */
+.admin-container {
+    width: 400px;
+    padding: 20px;
+    background: rgba(20, 20, 20, 0.9);
+    border-radius: 10px;
+    box-shadow: 0px 0px 15px rgba(255, 255, 255, 0.3);
+    text-align: center;
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+/* Title */
+.admin-container h2 {
+    margin-bottom: 15px;
+    font-size: 22px;
+    font-weight: bold;
+}
+
+/* Button Container */
+.button-container {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+}
+
+/* Buttons */
+button {
+    background: #444;
+    color: white;
+    border: none;
+    padding: 10px;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+}
+
+button:hover {
+    background: #666;
+}
+
+/* Close Button */
+button:last-child {
+    grid-column: span 2;
+    background: crimson;
+}
+
+button:last-child:hover {
+    background: red;
+}
+
+/* Input Container */
+.input-container {
+    margin: 10px 0;
+    text-align: left;
+}
+
+.input-container label {
+    display: block;
+    font-size: 14px;
+    margin-bottom: 5px;
+}
+
+textarea {
+    width: 100%;
+    height: 60px;
+    padding: 5px;
+    border-radius: 5px;
+    border: 1px solid #666;
+    background: #222;
+    color: white;
+    resize: none;
+}
+
+/* Warning Overlay */
+#warning-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 0, 0, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    color: white;
+    font-size: 1rem;
+    font-family: Arial, sans-serif;
+    text-align: center;
+    z-index: 9999;
+    transition: opacity 0.5s ease-in-out;
+}
+
+/* Default: Sembunyikan Overlay */
+.warning-hidden {
+    opacity: 0;
+    pointer-events: none;
+    visibility: hidden;
+}
+
+/* Kotak Warning */
+.warning-content {
+    background: rgba(0, 0, 0, 0.9);
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0px 0px 20px rgba(255, 255, 255, 0.5);
+    position: relative;
+    width: 400px;
+    text-align: center;
+}
+
+/* Footer untuk Admin */
+.warning-footer {
+    position: absolute;
+    bottom: -25px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    font-size: 0.8rem;
+    padding: 3px 8px;
+    border-radius: 3px;
+    width: max-content;
+}
+
+#warning-timer {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    font-size: 0.8rem;
+    padding: 5px 10px;
+    border-radius: 5px;
+    font-weight: bold;
+}
+
+/* Default: Sembunyikan Countdown */
+.warning-timer-hidden {
+    display: none;
+}
+
+/* Animation */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
