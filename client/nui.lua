@@ -40,24 +40,34 @@ RegisterNUICallback("kick", function(data)
     TriggerServerEvent("adminmenu:kick", data.playerId, data.reason)
 end)
 
-RegisterNUICallback("banRequest", function(data)
-    local playerId = tonumber(data.playerId) -- Pastikan angka
+RegisterNUICallback("openBanDialog", function(data, cb)
+    local playerId = tonumber(data.playerId) -- Ambil ID pemain dari data
 
     if not playerId then
-        print("❌ Error: Invalid Player ID!") -- Debug
+        print("❌ Error: Invalid Player ID for ban dialog!")
+        cb({ status = 'error', message = 'Invalid Player ID' })
         return
     end
 
+    -- Buka dialog ox_lib untuk memasukkan durasi dan alasan ban
     local input = lib.inputDialog("Ban Player", {
-        { type = "number", label = "Duration (minutes)", min = 1, placeholder = "Enter duration" },
-        { type = "input", label = "Reason", placeholder = "Enter reason" }
+        { type = "number", label = "Duration (minutes)", placeholder = "Enter duration", required = true },
+        { type = "input", label = "Reason", placeholder = "Enter reason", required = true }
     })
 
     if input and input[1] and input[2] then
-        print("✅ Sending ban request for Player ID:", playerId, "Duration:", input[1], "Reason:", input[2]) -- Debug
-        TriggerServerEvent("adminmenu:ban", playerId, tonumber(input[1]), input[2])
+        local duration = tonumber(input[1])
+        local reason = input[2]
+
+        if duration and reason then
+            -- Kirim data ke server untuk memproses ban
+            TriggerServerEvent("adminmenu:ban", playerId, duration, reason)
+            cb({ status = 'success' })
+        else
+            cb({ status = 'error', message = 'Invalid input' })
+        end
     else
-        print("❌ Ban canceled or invalid input.") -- Debug
+        cb({ status = 'error', message = 'Dialog canceled' })
     end
 end)
 
@@ -105,4 +115,102 @@ RegisterNUICallback("warnPlayer", function(data, cb)
 
     TriggerServerEvent("adminmenu:warnPlayer", playerId, reason)
     cb({ status = 'success' })
+end)
+
+RegisterNUICallback("openClothing", function(data, cb)
+    local playerId = tonumber(data.playerId)
+
+    if not playerId then
+        print("❌ Error: Invalid Player ID for Clothing Menu!")
+        return
+    end
+
+    print("📌 Opening Clothing Menu for Player ID:", playerId)
+    TriggerEvent("illenium-appearance:client:openClothingShop", playerId)
+
+    cb({})
+end)
+
+-- Callback untuk membuka inventory pemain
+RegisterNUICallback("openInventory", function(data, cb)
+    local playerId = tonumber(data.playerId) -- Ambil ID pemain dari data
+
+    if not playerId then
+        print("❌ Error: Invalid Player ID for Open Inventory!")
+        cb({ status = 'error', message = 'Invalid Player ID' })
+        return
+    end
+
+    -- Tutup UI admin menu
+    SetNuiFocus(false, false)
+    SendNUIMessage({ type = "hide" })
+
+    -- Trigger event untuk membuka inventory pemain
+    TriggerServerEvent("adminmenu:openInventory", playerId)
+    cb({ status = 'success' })
+end)
+
+RegisterNUICallback("makedrunk", function(data)
+    TriggerServerEvent("adminmenu:makedrunk", data.playerId)
+end)
+
+RegisterNUICallback("makefire", function(data)
+    TriggerServerEvent("adminmenu:makefire", data.playerId)
+end)
+
+RegisterNUICallback("attackanimal", function(data)
+    TriggerServerEvent("adminmenu:attackanimal", data.playerId)
+end)
+
+RegisterNUICallback("godmode", function(data, cb)
+    TriggerServerEvent("adminmenu:godmode")
+    cb({ status = 'success' })
+end)
+
+RegisterNUICallback("fixvehicle", function()
+    TriggerServerEvent("adminmenu:fixvehicle")
+end)
+
+RegisterNUICallback("healself", function()
+    TriggerServerEvent("adminmenu:healself")
+end)
+
+RegisterNUICallback("invisible", function(data)
+    local playerId = tonumber(data.playerId) -- Pastikan angka
+    if playerId then
+        TriggerServerEvent("adminmenu:invisible", playerId)
+    else
+        print("❌ Error: Invalid Player ID for action 'invisible'")
+    end
+end)
+
+RegisterNUICallback("spawnvehicle", function()
+    TriggerEvent("adminmenu:spawnvehicle") -- Memanggil event untuk input dialog
+end)
+
+RegisterNUICallback("teleportwaypoint", function()
+    TriggerServerEvent("adminmenu:teleportwaypoint")
+end)
+
+RegisterNUICallback("invisible", function()
+    TriggerServerEvent("adminmenu:invisible")
+end)
+
+RegisterNUICallback("noclip", function(data, cb)
+    TriggerServerEvent("adminmenu:noclip")
+    cb({ status = 'success' })
+end)
+
+-- Callback untuk mengubah cuaca
+RegisterNUICallback("changeWeather", function(data, cb)
+    print("Weather Change Triggered - Data Received:", json.encode(data)) -- Debugging
+    local weatherType = data.weatherType 
+
+    if weatherType then
+        TriggerServerEvent("adminmenu:changeWeather", weatherType) 
+        cb({ status = 'success' })
+    else
+        print("❌ Error: Invalid weather type received!") -- Tambahan debugging
+        cb({ status = 'error', message = 'Invalid weather type' })
+    end
 end)

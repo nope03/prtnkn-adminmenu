@@ -4,53 +4,100 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Menu</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div id="admin-menu" class="admin-container" style="display: none;">
-        
-        <!-- Halaman Daftar Pemain -->
-        <div id="player-list">
-            <h2>Player List</h2>
-            <div class="grid-container" id="players"></div>
+    <!-- Sidebar Navigasi -->
+    <div id="sidebar-navigation">
+        <!-- Tombol Burger -->
+        <div id="burger-button" onclick="toggleSidebar()">
+            <div class="burger-line"></div>
+            <div class="burger-line"></div>
+            <div class="burger-line"></div>
         </div>
 
-        <!-- Halaman Action -->
-        <div id="player-actions" style="display: none;">
-            <h2>Actions for <span id="selected-player"></span> (ID: <span id="selected-player-id"></span>)</h2>
-            <div class="button-container">
-                <button onclick="sendAction('spectate')">🎥 Spectate</button>
-                <button onclick="sendAction('kill')">💀 Kill</button>
-                <button onclick="sendAction('revive')">❤️ Revive</button>
-                <button onclick="sendAction('kick')">👢 Kick</button>
-                <button onclick="banPlayer(document.getElementById('selected-player').textContent)">🚫 Ban</button>
-                <button onclick="sendAction('bring')">🔄 Bring</button>
-                <button onclick="sendAction('goto')">🚀 Go To</button>
-                <button id="freeze-button" onclick="sendAction('freezeToggle')">❄️ Freeze</button>
-                <button onclick="sendAction('heal')">❤️ Heal</button>
-                <button onclick="openWarnForm()">⚠️ Warn</button>
-
-                <button onclick="goBack()">🔙 Back</button>
+        <!-- Daftar Menu -->
+        <div id="sidebar-menu">
+            <div class="judul">
+                <h2>ADMIN MENU</h2>
+                <p>1.0.0</p>
             </div>
+            <hr>
+            <button id="admin-actions-btn" onclick="showAdminActions()">
+                <i class="fas fa-shield-alt"></i> Admin Menu
+            </button>
+            <button id="player-list-btn" onclick="showPlayerList()">
+                <i class="fas fa-users"></i> Manage Players
+            </button>
         </div>
-
     </div>
-        <div id="warning-overlay" class="warning-hidden">
-            <div class="warning-content">
-                <h1>⚠️ WARNING! ⚠️</h1>
-                <p id="warning-reason">No reason provided</p>
-                
-                <!-- Countdown Timer di dalam Warning -->
-                <div id="warning-timer">Wait for 10s <p id="warning-admin">Warning by: Unknown</p></div>
-
-                <div class="warning-footer">
-                    <p id="warning-admin">Warning by: Unknown</p>
+    <div id="admin-menu" class="admin-container" style="display: none;">
+        <!-- Tombol Toggle Layout di pojok kanan atas admin-menu -->
+        <div id="toggle-layout-button" onclick="toggleLayout()" class="toggle-layout-button">
+            <i class="fas fa-arrow-left"></i> <!-- Panah ke samping (default) -->
+        </div>
+    
+        <!-- Konten Utama -->
+        <div id="main-content">
+            <!-- Menu Admin Actions -->
+            <div id="admin-actions" style="display: none;">
+                <h2>Admin Actions</h2>
+                <hr>
+                <div class="button-container">
+                    <button onclick="sendAksi('godmode')"><i class="fas fa-shield-alt"></i> God Mode</button>
+                    <button onclick="sendAksi('fixvehicle')"><i class="fas fa-wrench"></i> Fix Vehicle</button>
+                    <button onclick="sendAksi('healself')"><i class="fas fa-heart"></i> Heal Self</button>
+                    <button onclick="spawnVehicle()"><i class="fas fa-car"></i> Spawn Vehicle</button>
+                    <button onclick="sendAksi('teleportwaypoint')"><i class="fas fa-map-marker-alt"></i> Teleport to Waypoint</button>
+                    <button onclick="sendAksi('invisible')"><i class="fas fa-ghost"></i> Invisible</button>
+                    <button class="admin-button" data-permission="noclip" onclick="sendAksi('noclip')"><i class="fas fa-plane"></i> NoClip</button>
+                     <button onclick="changeWeather()"><i class="fas fa-cloud-sun"></i> Change Weather</button>
+                </div>
+            </div>
+    
+            <!-- Player List -->
+            <div id="player-list" style="display: none;">
+                <h2>Player List</h2>
+                <hr>
+                <div class="grid-container" id="players"></div>
+            </div>
+    
+            <!-- Halaman Action untuk Pemain Terpilih -->
+            <div id="player-actions" style="display: none;">
+                <h2>Actions for <span id="selected-player"></span> | <span id="selected-player-id"></span></h2>
+                <hr>
+                <div class="button-container">
+                    <button onclick="sendAction('spectate')"><i class="fas fa-video"></i> Spectate</button>
+                    <button onclick="sendAction('kill')"><i class="fas fa-skull"></i> Kill</button>
+                    <button onclick="sendAction('revive')"><i class="fas fa-heartbeat"></i> Revive</button>
+                    <button onclick="sendAction('kick')"><i class="fas fa-boot"></i> Kick</button>
+                    <button onclick="banPlayer()"><i class="fas fa-ban"></i> Ban Player</button>
+                    <button onclick="sendAction('bring')"><i class="fas fa-sync-alt"></i> Bring</button>
+                    <button onclick="sendAction('goto')"><i class="fas fa-rocket"></i> Go To</button>
+                    <button id="freeze-button" onclick="sendAction('freezeToggle')"><i class="fas fa-snowflake"></i> Freeze</button>
+                    <button onclick="sendAction('heal')"><i class="fas fa-medkit"></i> Heal</button>
+                    <button onclick="openWarnForm()"><i class="fas fa-exclamation-triangle"></i> Warn</button>
+                    <button onclick="openClothing()"><i class="fas fa-tshirt"></i> Change Clothes</button>
+                    <button onclick="openInventory()"><i class="fas fa-box-open"></i> Open Inventory</button>
+                    <button onclick="sendAction('makedrunk')"><i class="fas fa-beer"></i> Make Drunk</button>
+                    <button onclick="sendAction('makefire')"><i class="fas fa-fire"></i> Make Fire</button>
+                    <button onclick="sendAction('attackanimal')"><i class="fas fa-paw"></i> Attack Animal</button>
                 </div>
             </div>
         </div>
     </div>
-    <script src="script.js"></script>
 
+    <div id="warning-overlay" class="warning-hidden">
+        <div class="warning-content">
+            <h1>⚠️ WARNING! ⚠️</h1>
+            <p id="warning-reason">No reason provided</p>
+            <div id="warning-timer">Wait for 10s <p id="warning-admin">Warning by: Unknown</p></div>
+            <div class="warning-footer">
+                <p id="warning-admin">Warning by: Unknown</p>
+            </div>
+        </div>
+    </div>
+    <script src="script.js"></script>
 </body>
 </html>
-

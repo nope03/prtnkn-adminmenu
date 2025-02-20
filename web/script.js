@@ -1,12 +1,14 @@
 window.onload = function() {
     console.log("Admin menu script loaded");
 
+    showAdminActions();
+
     window.addEventListener("message", (event) => {
         console.log("NUI Message received:", event.data);
     
         const body = document.querySelector("body");
         const adminMenu = document.getElementById("admin-menu");
-        const playerList = document.getElementById("player-list");
+        const playerList = document.getElementById("sidebar-left");
         const playerActions = document.getElementById("player-actions");
         const playersContainer = document.getElementById("players");
     
@@ -18,6 +20,8 @@ window.onload = function() {
         if (event.data.type === "show") {
             adminMenu.style.display = "block";
             body.classList.add("active");
+
+            showAdminActions();
     
             // Tampilkan daftar pemain jika ada
             if (event.data.players) {
@@ -25,7 +29,7 @@ window.onload = function() {
                 event.data.players.forEach(player => {
                     let playerDiv = document.createElement("div");
                     playerDiv.classList.add("grid-item");
-                    playerDiv.innerText = player.name + " (ID: " + player.id + ")";
+                    playerDiv.innerText = player.id + " | " + player.name;
                     playerDiv.onclick = function() {
                         selectPlayer(player.id, player.name);
                     };
@@ -44,6 +48,8 @@ window.onload = function() {
             updateFreezeButton(event.data.isFrozen);
         } else if (event.data.type === "showWarning") {
             showWarning(event.data.adminName, event.data.reason);
+        } else if (event.data.type === "openClothing") {
+            openClothing(event.data)
         }
     });
 
@@ -69,6 +75,63 @@ window.onload = function() {
         }
     });
 };
+
+function setActiveButton(activeButtonId) {
+    // Hapus kelas 'active' dari semua tombol
+    const buttons = document.querySelectorAll("#sidebar-menu button");
+    buttons.forEach(button => {
+        button.classList.remove("active");
+    });
+
+    // Tambahkan kelas 'active' ke tombol yang dipilih
+    const activeButton = document.getElementById(activeButtonId);
+    if (activeButton) {
+        activeButton.classList.add("active");
+    }
+}
+
+// Fungsi untuk menampilkan Admin Actions
+function showAdminActions() {
+    document.getElementById("admin-actions").style.display = "block";
+    document.getElementById("player-list").style.display = "none";
+    document.getElementById("player-actions").style.display = "none";
+
+    // Tandai tombol Admin Actions sebagai aktif
+    setActiveButton("admin-actions-btn");
+}
+
+// Fungsi untuk menampilkan Player List
+function showPlayerList() {
+    document.getElementById("admin-actions").style.display = "none";
+    document.getElementById("player-list").style.display = "block";
+    document.getElementById("player-actions").style.display = "none";
+
+    // Tandai tombol Player List sebagai aktif
+    setActiveButton("player-list-btn");
+}
+
+function toggleLayout() {
+    const buttonContainer = document.querySelector('.button-container');
+    const adminContainer = document.querySelector('.admin-container');
+    const toggleButton = document.getElementById('toggle-layout-button');
+    const playerList = document.getElementById("player-list");
+
+    if (playerList && buttonContainer && adminContainer && toggleButton) {
+        // Toggle class 'minimized' pada admin-container dan button-container
+        adminContainer.classList.toggle('minimized');
+        buttonContainer.classList.toggle('minimized');
+        playerList.classList.toggle("minimized");
+
+        // Ubah ikon panah berdasarkan state
+        if (adminContainer.classList.contains('minimized')) {
+            toggleButton.innerHTML = '<i class="fas fa-arrow-down"></i>'; // Panah ke bawah saat minimize
+        } else {
+            toggleButton.innerHTML = '<i class="fas fa-arrow-left"></i>'; // Panah ke samping saat maximize
+        }
+    } else {
+        console.error("❌ Error: Could not find required elements!");
+    }
+}
 
 function selectPlayer(playerId, playerName) {
     if (!playerId || isNaN(playerId)) {
@@ -98,7 +161,39 @@ function sendAction(action) {
     fetch(`https://${GetParentResourceName()}/${action}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ playerId })
+        body: JSON.stringify({ playerId: playerId })
+    }).then(response => {
+        if (!response.ok) {
+            console.error(`❌ Server error for action '${action}':`, response.statusText);
+        }
+    }).catch(error => {
+        console.error(`❌ Fetch error for action '${action}':`, error);
+    });
+}
+
+function sendAksi(action) {
+
+    fetch(`https://${GetParentResourceName()}/${action}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({})
+    }).then(response => {
+        if (!response.ok) {
+            console.error(`❌ Server error for action '${action}':`, response.statusText);
+        }
+    }).catch(error => {
+        console.error(`❌ Fetch error for action '${action}':`, error);
+    });
+}
+
+// Fungsi untuk aksi admin (God Mode, Fix Vehicle, dll)
+function sendAdminAction(action) {
+    console.log(`📌 Sending admin action: ${action}`);
+
+    fetch(`https://${GetParentResourceName()}/${action}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({})
     }).then(response => {
         if (!response.ok) {
             console.error(`❌ Server error for action '${action}':`, response.statusText);
@@ -126,19 +221,26 @@ function sendKickBan(action, reason) {
 }
 
 function banPlayer() {
-    let selectedPlayerId = document.getElementById("selected-player-id").textContent.trim(); // Ambil ID
+    let playerId = document.getElementById("selected-player-id").textContent.trim(); // Ambil ID pemain
 
-    if (!selectedPlayerId || isNaN(selectedPlayerId)) {
+    if (!playerId || isNaN(playerId)) {
         console.error("❌ Error: Invalid Player ID for ban!");
         return;
     }
 
-    console.log(`📌 Sending ban request for Player ID: ${selectedPlayerId}`);
+    console.log(`📌 Opening Ban Dialog for Player ID: ${playerId}`);
 
-    fetch(`https://${GetParentResourceName()}/banRequest`, {
+    // Kirim permintaan ke NUI callback untuk membuka dialog ox_lib
+    fetch(`https://${GetParentResourceName()}/openBanDialog`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ playerId: selectedPlayerId })
+        body: JSON.stringify({ playerId })
+    }).then(response => {
+        if (!response.ok) {
+            console.error("❌ Error:", response.statusText);
+        }
+    }).catch(error => {
+        console.error("❌ Error:", error);
     });
 }
 
@@ -219,19 +321,27 @@ function showWarning(adminName, reason) {
 
 
 function closeAdminMenu() {
-    let adminMenu = document.getElementById("admin-menu");
+    const adminMenu = document.getElementById("admin-menu");
+    const warningOverlay = document.getElementById("warning-overlay");
 
     if (adminMenu) {
-        adminMenu.style.display = "none";
-        document.body.classList.remove("active");
+        // Tambahkan class 'closing' untuk memicu efek transisi
+        adminMenu.classList.add("closing");
+
+        // Tunggu hingga transisi selesai sebelum menyembunyikan menu
+        setTimeout(() => {
+            adminMenu.style.display = "none";
+            adminMenu.classList.remove("closing"); // Hapus class 'closing'
+            document.body.classList.remove("active");
+        }, 300); // Sesuaikan waktu dengan durasi transisi (300ms)
     }
 
-    // **Pastikan Warning Overlay tidak ikut tertutup**
-    let warningOverlay = document.getElementById("warning-overlay");
+    // Pastikan Warning Overlay tidak ikut tertutup
     if (!warningOverlay.classList.contains("warning-hidden")) {
-        return; // Jika Warning sedang aktif, jangan tutup overlay
+        return;
     }
 
+    // Kirim permintaan ke server untuk menutup menu
     fetch(`https://${GetParentResourceName()}/close`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -239,7 +349,89 @@ function closeAdminMenu() {
     });
 }
 
-// Fungsi kembali ke daftar pemain
+function openClothing() {
+    let playerId = document.getElementById("selected-player-id").textContent.trim();
+
+    if (!playerId || isNaN(playerId)) {
+        console.error("❌ Error: Invalid Player ID for Clothing Menu!");
+        return;
+    }
+
+    console.log(`📌 Opening Clothing Menu for Player ID: ${playerId}`);
+
+    // Kirim permintaan untuk membuka menu pakaian
+    fetch(`https://${GetParentResourceName()}/openClothing`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ playerId })
+    }).then(response => {
+        if (response.ok) {
+            // Tutup menu admin setelah menu pakaian dibuka
+            closeAdminMenu();
+        }
+    }).catch(error => {
+        console.error("❌ Error:", error);
+    });
+}
+
+function openInventory() {
+    let playerId = document.getElementById("selected-player-id").textContent.trim(); // Ambil ID pemain
+
+    if (!playerId || isNaN(playerId)) {
+        console.error("❌ Error: Invalid Player ID for Open Inventory!");
+        return;
+    }
+
+    console.log(`📌 Opening Inventory for Player ID: ${playerId}`);
+
+    // Tutup UI admin menu
+    closeAdminMenu();
+
+    // Kirim permintaan untuk membuka inventory
+    fetch(`https://${GetParentResourceName()}/openInventory`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ playerId })
+    }).then(response => {
+        if (!response.ok) {
+            console.error("❌ Error:", response.statusText);
+        }
+    }).catch(error => {
+        console.error("❌ Error:", error);
+    });
+}
+
+function toggleSidebar() {
+    const sidebar = document.getElementById("sidebar-navigation");
+    sidebar.classList.toggle("collapsed");
+}
+
+
+function spawnVehicle() {
+    fetch(`https://${GetParentResourceName()}/spawnvehicle`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" }
+    });
+}
+
+// Fungsi untuk mengubah cuaca
+function changeWeather(weatherType) {
+    console.log(`📌 Changing weather to: ${weatherType}`);
+
+    // Kirim permintaan ke server untuk mengubah cuaca
+    fetch(`https://${GetParentResourceName()}/changeWeather`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ weatherType: weatherType }) // Pastikan weatherType dikirim
+    }).then(response => {
+        if (!response.ok) {
+            console.error("❌ Error:", response.statusText);
+        }
+    }).catch(error => {
+        console.error("❌ Error:", error);
+    });
+}
+
 function goBack() {
     document.getElementById("player-list").style.display = "block";
     document.getElementById("player-actions").style.display = "none";

@@ -1,26 +1,167 @@
+/* Root custom properties */
+:root {
+    --white: white;
+    --orange: orange;
+    --dark-gray: #444;
+    --dark-gray-transparent: #4444447d;
+    --lighter-gray: #666;
+    --dark-background: rgba(39, 39, 39);
+    --light-background: rgba(20, 20, 20);
+    --highlight-orange: rgba(255, 166, 0, 0.5);
+    --highlight-orange-light: rgba(255, 166, 0, 0.1);
+    --warning-red: rgba(255, 0, 0, 0.8);
+    --white-translucent: rgba(255, 255, 255, 0.1);
+    --white-light: rgba(255, 255, 255, 0.5);
+    --text-shadow-light: 0px 0px 8px rgba(255, 255, 255, 0.5), 0px 0px 12px rgba(255, 255, 255, 0.3);
+    --text-shadow-orange: 0px 0px 8px rgba(255, 153, 0, 0.5), 0px 0px 12px rgba(255, 179, 0, 0.3);
+    --font-size-base: 16px;
+    --font-size-small: 14px;
+    --font-size-tiny: 10px;
+    --font-family: Arial, sans-serif;
+}
+
 /* General Styling */
 body {
     display: none;
     margin: 0;
     padding: 0;
-    background: rgba(0, 0, 0, 0.7);
     justify-content: center;
     align-items: center;
     height: 100vh;
-    font-family: Arial, sans-serif;
-    color: white;
+    font-family: var(--font-family);
+    color: var(--white);
+}
+
+hr {
+    border: none;
+    height: 1px;
+    color: var(--dark-gray); 
+    background-color: var(--dark-gray);
+}
+
+.judul {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+.judul h2 {
+    color: var(--white);
+    text-shadow: var(--text-shadow-light);
+    margin-bottom: 3px;
+}
+
+.judul p {
+    color: var(--orange);
+    text-shadow: var(--text-shadow-orange);
+    margin-top: 0;
+    font-size: var(--font-size-tiny);
+}
+
+/* Admin Container with transition effect */
+.admin-container {
+    position: relative;
+    width: 75%;
+    height: 50%;
+    padding: 20px;
+    background-image: radial-gradient(var(--dark-background), var(--light-background));
+    border-radius: 0px 5px 5px 0px;
+    text-align: center;
+    animation: fadeIn 0.3s ease-in-out;
+    transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+}
+
+#sidebar-menu button {
+    background: none;
+    color: var(--white);
+    border: 1px solid transparent;
+    padding: 5px;
+    border-radius: 5px;
+    font-size: var(--font-size-base);
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    text-align: left;
+    text-shadow: var(--text-shadow-light);
+    width: 100%;
+}
+
+#sidebar-menu button:hover {
+    color: var(--orange);
+    background-image: radial-gradient(var(--highlight-orange), var(--highlight-orange-light));
+}
+
+#sidebar-menu button.active {
+    background-image: radial-gradient(var(--highlight-orange), var(--highlight-orange-light));
+    color: var(--orange);
+    border-color: var(--orange);
+    text-shadow: var(--text-shadow-orange);
+}
+
+/* Admin container close effect */
+.admin-container.closing {
+    opacity: 0;
+    transform: translateY(-20px);
+}
+
+/* Toggle button for layout */
+.toggle-layout-button {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: var(--white-translucent);
+    border: 1px solid var(--white-light);
+    border-radius: 5px;
+    padding: 5px 10px;
+    cursor: pointer;
+    font-size: var(--font-size-base);
+    z-index: 1000;
+}
+
+.toggle-layout-button:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.5);
+}
+
+.admin-container.minimized {
+    width: 25%;
+    height: 50%;
+    transition: all 0.3s ease-in-out;
+}
+
+/* Sidebar Navigation */
+#sidebar-navigation {
+    width: 9%;
+    height: 50%;
+    background-image: radial-gradient(var(--dark-background), var(--light-background));
+    padding: 20px;
+    border-radius: 5px 0px 0px 5px;
+    display: flex;
+    flex-direction: column;
+    animation: slideleft 1s ease-in;
+}
+
+#sidebar-navigation button:hover {
+    background-image: radial-gradient(var(--highlight-orange), var(--highlight-orange-light));
 }
 
 /* Player List Grid */
 .grid-container {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(5, 1fr);
     gap: 10px;
     margin-top: 10px;
+    color: var(--white);
+    text-shadow: var(--text-shadow-light);
 }
 
 .grid-item {
-    background: #444;
+    background: radial-gradient(var(--dark-gray), var(--dark-gray-transparent));
+    color: var(--white);
+    text-shadow: var(--text-shadow-light);
+    border: 1px solid var(--dark-gray);
+    border-radius: 5px;
     padding: 10px;
     cursor: pointer;
     transition: all 0.2s ease-in-out;
@@ -28,66 +169,81 @@ body {
 }
 
 .grid-item:hover {
-    background: #666;
+    border: 1px solid var(--highlight-orange);
+    color: var(--orange);
+    background-image: radial-gradient(var(--highlight-orange), var(--highlight-orange-light));
 }
 
-/* Tampilkan body saat Admin Menu aktif */
+.button-container {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 10px;
+}
+
+/* Media Query for Smaller Screens */
+@media (max-width: 768px) {
+    .button-container {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .button-container button {
+        width: 100%;
+    }
+
+    .admin-container {
+        width: 25%;
+        height: 50%;
+    }
+
+    .grid-container {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+}
+
+button:hover {
+    color: var(--orange);
+    text-shadow: var(--text-shadow-orange);
+    border: 1px solid var(--highlight-orange);
+    background-image: radial-gradient(var(--highlight-orange), var(--highlight-orange-light));
+}
+
 body.active {
     display: flex;
 }
 
-/* Admin Menu Container */
-.admin-container {
-    width: 400px;
-    padding: 20px;
-    background: rgba(20, 20, 20, 0.9);
-    border-radius: 10px;
-    box-shadow: 0px 0px 15px rgba(255, 255, 255, 0.3);
-    text-align: center;
-    animation: fadeIn 0.3s ease-in-out;
-}
-
-/* Title */
 .admin-container h2 {
     margin-bottom: 15px;
     font-size: 22px;
     font-weight: bold;
 }
 
-/* Button Container */
-.button-container {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 10px;
-}
-
-/* Buttons */
 button {
-    background: #444;
-    color: white;
-    border: none;
+    background: radial-gradient(var(--dark-gray), var(--dark-gray-transparent));
+    color: var(--white);
+    text-shadow: var(--text-shadow-light);
+    border: 1px solid var(--dark-gray);
     padding: 10px;
     border-radius: 5px;
-    font-size: 16px;
+    font-size: var(--font-size-base);
     cursor: pointer;
     transition: all 0.2s ease-in-out;
 }
 
-button:hover {
-    background: #666;
+#admin-actions-btn, #player-list-btn {
+    background: none;
+    color: var(--white);
+    border: none;
+    padding: 10px;
+    border-radius: 5px;
+    font-size: var(--font-size-base);
+    cursor: pointer;
+    transition: all 0.3s ease-in-out;
 }
 
-/* Close Button */
-button:last-child {
-    grid-column: span 2;
-    background: crimson;
-}
-
-button:last-child:hover {
-    background: red;
-}
-
-/* Input Container */
 .input-container {
     margin: 10px 0;
     text-align: left;
@@ -95,7 +251,7 @@ button:last-child:hover {
 
 .input-container label {
     display: block;
-    font-size: 14px;
+    font-size: var(--font-size-small);
     margin-bottom: 5px;
 }
 
@@ -104,58 +260,54 @@ textarea {
     height: 60px;
     padding: 5px;
     border-radius: 5px;
-    border: 1px solid #666;
+    border: 1px solid var(--lighter-gray);
     background: #222;
-    color: white;
+    color: var(--white);
     resize: none;
 }
 
-/* Warning Overlay */
 #warning-overlay {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(255, 0, 0, 0.8);
+    background: var(--warning-red);
     display: flex;
     justify-content: center;
     align-items: center;
     flex-direction: column;
-    color: white;
+    color: var(--white);
     font-size: 1rem;
-    font-family: Arial, sans-serif;
+    font-family: var(--font-family);
     text-align: center;
     z-index: 9999;
     transition: opacity 0.5s ease-in-out;
 }
 
-/* Default: Sembunyikan Overlay */
 .warning-hidden {
     opacity: 0;
     pointer-events: none;
     visibility: hidden;
 }
 
-/* Kotak Warning */
 .warning-content {
     background: rgba(0, 0, 0, 0.9);
     padding: 20px;
     border-radius: 10px;
-    box-shadow: 0px 0px 20px rgba(255, 255, 255, 0.5);
+    box-shadow: 0px 0px 20px var(--white-light);
     position: relative;
     width: 400px;
     text-align: center;
 }
 
-/* Footer untuk Admin */
 .warning-footer {
     position: absolute;
     bottom: -25px;
     left: 50%;
     transform: translateX(-50%);
     background: rgba(0, 0, 0, 0.8);
-    color: white;
+    color: var(--white);
     font-size: 0.8rem;
     padding: 3px 8px;
     border-radius: 3px;
@@ -167,26 +319,92 @@ textarea {
     bottom: 10px;
     right: 10px;
     background: rgba(0, 0, 0, 0.7);
-    color: white;
+    color: var(--white);
     font-size: 0.8rem;
     padding: 5px 10px;
     border-radius: 5px;
     font-weight: bold;
 }
 
-/* Default: Sembunyikan Countdown */
 .warning-timer-hidden {
     display: none;
 }
 
-/* Animation */
+/* Animations */
 @keyframes fadeIn {
     from {
         opacity: 0;
-        transform: scale(0.9);
+        transform: translateY(-20px);
     }
     to {
         opacity: 1;
-        transform: scale(1);
+        transform: translateY(0);
     }
+}
+
+@keyframes slideleft {
+    0% {
+        opacity: 0;
+        transform: translateX(20px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes fadeOut {
+    from {
+        opacity: 1;
+    }
+    to {
+        opacity: 0;
+    }
+}
+
+@keyframes slideOut {
+    from {
+        transform: translateX(0);
+    }
+    to {
+        transform: translateX(20px);
+        opacity: 0;
+    }
+}
+
+.fade-out {
+    animation: fadeOut 0.3s ease-in-out forwards;
+}
+
+.slide-out {
+    animation: slideOut 0.3s ease-in-out forwards;
+}
+
+/* Weather Icon Styling */
+button i.fa-cloud-sun {
+    color: #87CEEB;
+}
+
+button i.fa-sun {
+    color: #FFD700;
+}
+
+button i.fa-cloud-rain {
+    color: #87CEEB;
+}
+
+button i.fa-bolt {
+    color: #FFA500;
+}
+
+button i.fa-snowflake {
+    color: var(--white);
+}
+
+button i.fa-smog {
+    color: #A9A9A9;
+}
+
+#weather-control {
+    width: 100%;
 }
