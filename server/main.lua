@@ -466,7 +466,7 @@ AddEventHandler("adminmenu:spawnvehicle", function(vehicleName)
     TriggerClientEvent("adminmenu:spawnvehicle", source, vehicleName)
 end)
 
-RegisterServerEvent("adminmenu:changeWeather")
+RegisterNetEvent("adminmenu:changeWeather")
 AddEventHandler("adminmenu:changeWeather", function(weatherType)
     local src = source
 
@@ -475,8 +475,42 @@ AddEventHandler("adminmenu:changeWeather", function(weatherType)
         return
     end
 
-    TriggerClientEvent("adminmenu:changeWeather", -1, weatherType)
+    print("📌 Admin changed weather to:", weatherType)
+
+    -- Kirim ke semua pemain agar cuaca tersinkronisasi
+    TriggerClientEvent("adminmenu:updateWeather", -1, weatherType)
+
+    -- Notifikasi ke semua admin
+    TriggerClientEvent("ox_lib:notify", src, {
+        title = "Admin Menu",
+        description = "✅ Weather changed to: " .. weatherType,
+        type = "success"
+    })
 end)
+
+RegisterNetEvent("adminmenu:setTime")
+AddEventHandler("adminmenu:setTime", function(hour, minute)
+    local src = source
+
+    -- Pastikan fungsi Config.HasPermission ada sebelum digunakan
+    if Config and Config.HasPermission and not Config.HasPermission(src, "setTime") then
+        print("❌ Unauthorized access attempt by Player ID:", src)
+        return
+    end
+
+    print("📌 Admin changed time to:", hour .. ":" .. minute)
+
+    -- Kirim waktu baru ke semua pemain
+    TriggerClientEvent("adminmenu:updateTime", -1, hour, minute)
+
+    -- Notifikasi ke admin
+    TriggerClientEvent("ox_lib:notify", src, {
+        title = "Admin Menu",
+        description = "⏰ Time set to: " .. hour .. ":" .. minute,
+        type = "success"
+    })
+end)
+
 
 ESX.RegisterServerCallback("adminmenu:getPlayers", function(source, cb)
     local players = {}

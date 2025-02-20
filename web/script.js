@@ -414,23 +414,45 @@ function spawnVehicle() {
     });
 }
 
-// Fungsi untuk mengubah cuaca
-function changeWeather(weatherType) {
-    console.log(`📌 Changing weather to: ${weatherType}`);
-
-    // Kirim permintaan ke server untuk mengubah cuaca
-    fetch(`https://${GetParentResourceName()}/changeWeather`, {
+function changeWeather() {
+    fetch(`https://${GetParentResourceName()}/openWeatherDialog`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ weatherType: weatherType }) // Pastikan weatherType dikirim
-    }).then(response => {
-        if (!response.ok) {
-            console.error("❌ Error:", response.statusText);
-        }
-    }).catch(error => {
-        console.error("❌ Error:", error);
-    });
+        headers: { "Content-Type": "application/json" }
+    }).then(response => response.json())
+      .then(data => {
+          if (data && data.weatherType) {
+              fetch(`https://${GetParentResourceName()}/changeWeather`, {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ weatherType: data.weatherType })
+              });
+          }
+      }).catch(error => console.error("❌ Error:", error));
 }
+
+function changeTime() {
+    console.log("📌 Change Time button clicked.");
+
+    fetch(`https://${GetParentResourceName()}/openTimeDialog`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data && typeof data.hour === "number" && typeof data.minute === "number") {
+            console.log("📌 Sending time to server. Hour:", data.hour, "Minute:", data.minute);
+            return fetch(`https://${GetParentResourceName()}/changeTime`, { // Tambahkan return
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ hour: data.hour, minute: data.minute })
+            });
+        } else {
+            console.log("❌ User canceled time selection.");
+        }
+    })
+    .catch(error => console.error("❌ Error:", error));
+}
+
 
 function goBack() {
     document.getElementById("player-list").style.display = "block";

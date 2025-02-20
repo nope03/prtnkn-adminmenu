@@ -1,13 +1,29 @@
--- Event handler untuk mengubah cuaca
-RegisterNetEvent("adminmenu:changeWeather")
-AddEventHandler("adminmenu:changeWeather", function(weatherType)
-    -- Set the weather type
+RegisterNetEvent("adminmenu:updateWeather")
+AddEventHandler("adminmenu:updateWeather", function(weatherType)
+    -- Set cuaca untuk semua pemain
     SetWeatherTypePersist(weatherType)
     SetWeatherTypeNow(weatherType)
     SetWeatherTypeNowPersist(weatherType)
-    lib.notify({
-        title = "Admin Menu",
-        description = "🌤️ Weather changed to: " .. weatherType,
-        type = "success"
-    })
+
+    print("🌦️ Weather updated to:", weatherType)
 end)
+
+local currentHour, currentMinute = 12, 0
+
+RegisterNetEvent("adminmenu:updateTime")
+AddEventHandler("adminmenu:updateTime", function(hour, minute)
+    print("📌 Received time update from server. Hour:", hour, "Minute:", minute)
+
+    currentHour, currentMinute = hour, minute
+    NetworkOverrideClockTime(currentHour, currentMinute, 0)
+    print("⏰ Time updated to:", currentHour .. ":" .. currentMinute)
+end)
+
+-- Loop yang memperbarui waktu setiap detik
+Citizen.CreateThread(function()
+    while true do
+        Citizen.Wait(1000)
+        NetworkOverrideClockTime(currentHour, currentMinute, 0)
+    end
+end)
+

@@ -30,6 +30,12 @@
             <button id="player-list-btn" onclick="showPlayerList()">
                 <i class="fas fa-users"></i> Manage Players
             </button>
+            <button onclick="changeWeather()">
+                <i class="fas fa-cloud-sun"></i> Change Weather
+            </button>
+            <button onclick="changeTime()">
+                <i class="fas fa-clock"></i> Set Time
+            </button>                                 
         </div>
     </div>
     <div id="admin-menu" class="admin-container" style="display: none;">
@@ -52,7 +58,6 @@
                     <button onclick="sendAksi('teleportwaypoint')"><i class="fas fa-map-marker-alt"></i> Teleport to Waypoint</button>
                     <button onclick="sendAksi('invisible')"><i class="fas fa-ghost"></i> Invisible</button>
                     <button class="admin-button" data-permission="noclip" onclick="sendAksi('noclip')"><i class="fas fa-plane"></i> NoClip</button>
-                     <button onclick="changeWeather()"><i class="fas fa-cloud-sun"></i> Change Weather</button>
                 </div>
             </div>
     

@@ -19,11 +19,12 @@ Config.AdminPermissions = {
     ["changeWeather"] = { "admin", "superadmin" },
     ["fixvehicle"] = { "admin", "superadmin" },
     ["healself"] = { "admin", "superadmin", "mod" },
-    ["openInventory"] = {"superadmin" },
+    ["openInventory"] = { "admin", "superadmin" },
     ["makedrunk"] = { "admin", "superadmin" },
     ["makefire"] = { "admin", "superadmin" },
     ["attackanimal"] = { "admin", "superadmin" },
     ["openClothing"] = { "admin", "superadmin", "mod" },
+    ["setTime"] = { "admin", "superadmin", "mod" },
 }
 
 Config.HasPermission = function(source, permission)

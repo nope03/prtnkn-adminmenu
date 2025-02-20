@@ -201,16 +201,66 @@ RegisterNUICallback("noclip", function(data, cb)
     cb({ status = 'success' })
 end)
 
--- Callback untuk mengubah cuaca
 RegisterNUICallback("changeWeather", function(data, cb)
-    print("Weather Change Triggered - Data Received:", json.encode(data)) -- Debugging
-    local weatherType = data.weatherType 
+    local weatherType = data.weatherType
 
     if weatherType then
-        TriggerServerEvent("adminmenu:changeWeather", weatherType) 
-        cb({ status = 'success' })
+        TriggerServerEvent("adminmenu:changeWeather", weatherType) -- Kirim ke server
+        cb({ status = "success" })
     else
-        print("❌ Error: Invalid weather type received!") -- Tambahan debugging
-        cb({ status = 'error', message = 'Invalid weather type' })
+        cb({ status = "error", message = "Invalid weather type" })
     end
+end)
+
+RegisterNUICallback("openWeatherDialog", function(_, cb)
+    local weatherType = lib.inputDialog("🌦️ Change Weather", {
+        { type = "select", label = "Select Weather", options = {
+            { label = "Extra Sunny", value = "EXTRASUNNY" },
+            { label = "Clear", value = "CLEAR" },
+            { label = "Neutral", value = "NEUTRAL" },
+            { label = "Smog", value = "SMOG" },
+            { label = "Foggy", value = "FOGGY" },
+            { label = "Overcast", value = "OVERCAST" },
+            { label = "Clouds", value = "CLOUDS" },
+            { label = "Rain", value = "RAIN" },
+            { label = "Thunder", value = "THUNDER" },
+            { label = "Snow", value = "SNOW" },
+            { label = "Blizzard", value = "BLIZZARD" }
+        }}
+    })
+
+    if weatherType then
+        cb({ weatherType = weatherType[1] })
+    else
+        cb({}) -- Jika user batal memilih
+    end
+end)
+
+RegisterNUICallback("changeTimer", function(data, cb)
+    local hour = data.hour
+    local minute = data.minute
+
+    if hour or minute then
+        TriggerServerEvent("adminmenu:changeWeather", hour, minute) -- Kirim ke server
+        cb({ status = "success" })
+    else
+        cb({ status = "error", message = "Invalid weather type" })
+    end
+end)
+
+RegisterNUICallback("openTimeDialog", function(_, cb)
+    CreateThread(function()
+        local timeInput = lib.inputDialog("⏰ Set Time", {
+            { type = "number", label = "Hour (0-23)", min = 0, max = 23, default = 12 },
+            { type = "number", label = "Minute (0-59)", min = 0, max = 59, default = 0 }
+        })
+
+        if timeInput then
+            print("📌 Time input received. Hour:", timeInput[1], "Minute:", timeInput[2])
+            cb({ hour = timeInput[1], minute = timeInput[2] })
+        else
+            print("❌ User canceled time selection.")
+            cb({})
+        end
+    end)
 end)
