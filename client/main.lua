@@ -9,7 +9,6 @@ local function notify(title, description, type)
 end
 
 local function toggleSpectate(targetId)
-    local playerPed = PlayerPedId()
     local targetPed = GetPlayerPed(GetPlayerFromServerId(targetId))
     
     if not DoesEntityExist(targetPed) then
@@ -19,7 +18,7 @@ local function toggleSpectate(targetId)
     isSpectating = not isSpectating
     spectatedPlayer = isSpectating and targetId or nil
     NetworkSetInSpectatorMode(isSpectating, targetPed)
-    SetEntityVisible(playerPed, not isSpectating)
+    SetEntityVisible(cache.ped, not isSpectating)
     
     notify("Admin Menu", isSpectating and "👁 Now Spectating Player ID: " .. targetId or "📌 Stopped Spectating.", "info")
 end
@@ -43,7 +42,7 @@ end)
 RegisterNetEvent("adminmenu:toggle", function(state)
     SetNuiFocus(state, state)
     if state then
-        ESX.TriggerServerCallback("adminmenu:getPlayers", function(players)
+        lib.callback("adminmenu:getPlayers", false, function(players)
             SendNUIMessage({ type = "show", players = players })
         end)
     else
@@ -52,7 +51,7 @@ RegisterNetEvent("adminmenu:toggle", function(state)
 end)
 
 RegisterNetEvent("adminmenu:freeze", function(state)
-    FreezeEntityPosition(PlayerPedId(), state)
+    FreezeEntityPosition(cache.ped, state)
     notify("Admin Menu", state and "❄️ You are frozen!" or "✅ You are unfrozen!", "info")
 end)
 
@@ -87,16 +86,15 @@ end)
 
 RegisterNetEvent("adminmenu:godmode", function()
     isGodModeActive = not isGodModeActive
-    local playerPed = PlayerPedId()
     
-    SetEntityInvincible(playerPed, isGodModeActive)
+    SetEntityInvincible(cache.ped, isGodModeActive)
     SetPlayerInvincible(PlayerId(), isGodModeActive)
-    SetEntityCanBeDamaged(playerPed, not isGodModeActive)
+    SetEntityCanBeDamaged(cache.ped, not isGodModeActive)
     if isGodModeActive then
-        SetEntityHealth(playerPed, 200)
+        SetEntityHealth(cache.ped, 200)
         Citizen.CreateThread(function()
             while isGodModeActive do
-                SetEntityHealth(playerPed, 200)
+                SetEntityHealth(cache.ped, 200)
                 Citizen.Wait(100)
             end
         end)
@@ -105,7 +103,7 @@ RegisterNetEvent("adminmenu:godmode", function()
 end)
 
 RegisterNetEvent("adminmenu:fixvehicle", function()
-    local vehicle = GetVehiclePedIsIn(PlayerPedId(), false)
+    local vehicle = GetVehiclePedIsIn(cache.ped, false)
     if vehicle ~= 0 then
         SetVehicleFixed(vehicle)
         SetVehicleDeformationFixed(vehicle)
@@ -116,7 +114,7 @@ RegisterNetEvent("adminmenu:fixvehicle", function()
 end)
 
 RegisterNetEvent("adminmenu:healself", function()
-    SetEntityHealth(PlayerPedId(), 200)
+    SetEntityHealth(cache.ped, 200)
     notify("Admin Menu", "❤️ You have been healed!", "success")
 end)
 
@@ -132,7 +130,7 @@ end)
 RegisterNetEvent("adminmenu:teleportwaypoint", function()
     local waypoint = GetFirstBlipInfoId(8)
     if DoesBlipExist(waypoint) then
-        SetEntityCoords(PlayerPedId(), GetBlipCoords(waypoint), false, false, false, true)
+        SetEntityCoords(cache.ped, GetBlipCoords(waypoint), false, false, false, true)
         notify("Admin Menu", "📍 Teleported to Waypoint", "success")
     else
         notify("Admin Menu", "❌ No waypoint set!", "error")
@@ -140,34 +138,30 @@ RegisterNetEvent("adminmenu:teleportwaypoint", function()
 end)
 
 RegisterNetEvent("adminmenu:invisible", function()
-    local playerPed = PlayerPedId()
-    local newState = not IsEntityVisible(playerPed)
-    SetEntityVisible(playerPed, newState, false)
+    local newState = not IsEntityVisible(cache.ped)
+    SetEntityVisible(cache.ped, newState, false)
     notify("Admin Menu", newState and "❌ Invisible Mode Disabled" or "👻 Invisible Mode Enabled", "success")
 end)
 
 RegisterNetEvent("adminmenu:noclip")
 AddEventHandler("adminmenu:noclip", function()
-    local playerPed = PlayerPedId()
-
-    -- Toggle NoClip state
     isNoClipActive = not isNoClipActive
 
     if isNoClipActive then
         -- Aktifkan NoClip
-        SetEntityAlpha(playerPed, 150, false) -- Set transparansi (alpha = 150)
-        SetEntityCollision(playerPed, false, false) -- Nonaktifkan collision
-        FreezeEntityPosition(playerPed, true) -- Bekukan posisi ped
-        SetEntityInvincible(playerPed, true) -- Buat ped tidak bisa mati
+        SetEntityAlpha(cache.ped, 150, false) -- Set transparansi (alpha = 150)
+        SetEntityCollision(cache.ped, false, false) -- Nonaktifkan collision
+        FreezeEntityPosition(cache.ped, true) -- Bekukan posisi ped
+        SetEntityInvincible(cache.ped, true) -- Buat ped tidak bisa mati
 
         -- Sembunyikan player dari player lain
-        SetEntityVisible(playerPed, false, false) -- Sembunyikan dari diri sendiri
-        NetworkSetEntityInvisibleToNetwork(playerPed, true) -- Sembunyikan dari jaringan
+        SetEntityVisible(cache.ped, false, false) -- Sembunyikan dari diri sendiri
+        NetworkSetEntityInvisibleToNetwork(cache.ped, true) -- Sembunyikan dari jaringan
 
         -- Mulai loop NoClip
-        Citizen.CreateThread(function()
+        CreateThread(function()
             while isNoClipActive do
-                local playerCoords = GetEntityCoords(playerPed)
+                local playerCoords = GetEntityCoords(cache.ped)
                 local speed = 1.0 -- Kecepatan NoClip
 
                 -- Dapatkan rotasi kamera
@@ -189,30 +183,28 @@ AddEventHandler("adminmenu:noclip", function()
                 end
 
                 -- Terapkan posisi baru
-                SetEntityCoordsNoOffset(playerPed, playerCoords.x, playerCoords.y, playerCoords.z, false, false, false)
+                SetEntityCoordsNoOffset(cache.ped, playerCoords.x, playerCoords.y, playerCoords.z, false, false, false)
 
-                -- Tunggu frame berikutnya
-                Citizen.Wait(0)
+                -- Tunggu frame berikutnyaWait(0)
             end
         end)
 
         lib.notify({ title = "Admin Menu", description = "✈️ NoClip Enabled", type = "success" })
     else
         -- Nonaktifkan NoClip
-        ResetEntityAlpha(playerPed) -- Kembalikan transparansi ke normal
-        SetEntityCollision(playerPed, true, true) -- Aktifkan collision
-        FreezeEntityPosition(playerPed, false) -- Lepaskan pembekuan posisi
-        SetEntityInvincible(playerPed, false) -- Buat ped bisa mati
+        ResetEntityAlpha(cache.ped) -- Kembalikan transparansi ke normal
+        SetEntityCollision(cache.ped, true, true) -- Aktifkan collision
+        FreezeEntityPosition(cache.ped, false) -- Lepaskan pembekuan posisi
+        SetEntityInvincible(cache.ped, false) -- Buat ped bisa mati
 
         -- Tampilkan kembali player ke player lain
-        SetEntityVisible(playerPed, true, false) -- Tampilkan ke diri sendiri
-        NetworkSetEntityInvisibleToNetwork(playerPed, false) -- Tampilkan di jaringan
+        SetEntityVisible(cache.ped, true, false) -- Tampilkan ke diri sendiri
+        NetworkSetEntityInvisibleToNetwork(cache.ped, false) -- Tampilkan di jaringan
 
         lib.notify({ title = "Admin Menu", description = "❌ NoClip Disabled", type = "success" })
     end
 end)
 
--- Fungsi untuk mengubah rotasi kamera menjadi vektor arah
 function RotToDirection(rotation)
     local rot = vector3(math.rad(rotation.x), math.rad(rotation.y), math.rad(rotation.z))
     local x = -math.sin(rot.z) * math.abs(math.cos(rot.x))
@@ -221,14 +213,12 @@ function RotToDirection(rotation)
     return vector3(x, y, z)
 end
 
--- Fungsi untuk menyembunyikan entity dari player lain
 function SetEntityLocallyInvisible(entity)
     SetEntityVisible(entity, false, false)
     SetEntityLocallyInvisible(entity)
     NetworkConcealEntity(entity, true)
 end
 
--- Fungsi untuk menampilkan entity ke player lain
 function SetEntityLocallyVisible(entity)
     SetEntityVisible(entity, true, false)
     SetEntityLocallyVisible(entity)
@@ -310,8 +300,8 @@ AddEventHandler("adminmenu:attackanimal", function(targetId)
     local targetPed = GetPlayerPed(GetPlayerFromServerId(targetId))
     if DoesEntityExist(targetPed) then
         local coords = GetEntityCoords(targetPed)
-        local hash = GetHashKey("a_c_mtlion")
-        RequestModel(hash)
+        local hash = `a_c_mtlion`
+        lib.requestModel(hash)
         while not HasModelLoaded(hash) do Wait(10) end
         local animal = CreatePed(28, hash, coords.x + 2, coords.y + 2, coords.z, 0.0, true, true)
         TaskCombatPed(animal, targetPed, 0, 16)
@@ -340,12 +330,11 @@ AddEventHandler("adminmenu:spawnvehicle", function()
     end
 end)
 
-CreateThread(function()
-    while true do
-        Wait(0)
-        if IsControlJustReleased(0, 288) then -- F1 Key
-            TriggerServerEvent("adminmenu:checkAdmin")
-        end
+local keybind = lib.addKeybind({
+    name = 'adminmenu',
+    description = 'press F1 open admin menu',
+    defaultKey = 'F1',
+    onPressed = function()
+        TriggerServerEvent("adminmenu:checkAdmin")
     end
-end)
-
+})

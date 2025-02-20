@@ -512,11 +512,11 @@ AddEventHandler("adminmenu:setTime", function(hour, minute)
 end)
 
 
-ESX.RegisterServerCallback("adminmenu:getPlayers", function(source, cb)
+lib.callback.register("adminmenu:getPlayers", function(source)
     local players = {}
     for _, playerId in ipairs(GetPlayers()) do
         local xPlayer = ESX.GetPlayerFromId(playerId)
         table.insert(players, { id = playerId, name = xPlayer.getName() })
     end
-    cb(players)
+    return players
 end)
