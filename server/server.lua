@@ -492,18 +492,31 @@ RegisterNetEvent("adminmenu:setTime")
 AddEventHandler("adminmenu:setTime", function(hour, minute)
     local src = source
 
-    -- Pastikan fungsi Config.HasPermission ada sebelum digunakan
-    if Config and Config.HasPermission and not Config.HasPermission(src, "setTime") then
-        print("❌ Unauthorized access attempt by Player ID:", src)
+    -- Check if Config exists and has the required function
+    if Config and Config.HasPermission then
+        if not Config.HasPermission(src, "setTime") then
+            print("❌ Unauthorized access attempt by Player ID:", src)
+            return
+        end
+    else
+        print("⚠️ Warning: Config or HasPermission function not found - proceeding without permission check")
+    end
+
+    -- Validate input
+    hour = tonumber(hour)
+    minute = tonumber(minute)
+    
+    if not hour or not minute or hour < 0 or hour > 23 or minute < 0 or minute > 59 then
+        print("❌ Invalid time parameters received:", hour, minute)
         return
     end
 
     print("📌 Admin changed time to:", hour .. ":" .. minute)
 
-    -- Kirim waktu baru ke semua pemain
+    -- Send new time to all players
     TriggerClientEvent("adminmenu:updateTime", -1, hour, minute)
 
-    -- Notifikasi ke admin
+    -- Notify admin
     TriggerClientEvent("ox_lib:notify", src, {
         title = "Admin Menu",
         description = "⏰ Time set to: " .. hour .. ":" .. minute,
@@ -511,6 +524,21 @@ AddEventHandler("adminmenu:setTime", function(hour, minute)
     })
 end)
 
+RegisterNetEvent('adminmenu:deleteEntity')
+AddEventHandler('adminmenu:deleteEntity', function(netId)
+    local src = source
+    
+    if not Config.HasPermission(src, "deleteEntity") then
+        print("^1Unauthorized delete attempt by: "..GetPlayerName(src))
+        return
+    end
+    
+    local entity = NetworkGetEntityFromNetworkId(netId)
+    if DoesEntityExist(entity) then
+        DeleteEntity(entity)
+        print("^2Admin "..GetPlayerName(src).." deleted entity: "..entity)
+    end
+end)
 
 lib.callback.register("adminmenu:getPlayers", function(source)
     local players = {}

@@ -3,6 +3,9 @@ local spectatedPlayer = nil
 local isGodModeActive = false
 local isNoClipActive = false
 local adminPermissions = {}
+local noclipThread = nil
+local laserEnabled = false
+local laserThread = nil
 
 local function notify(title, description, type)
     lib.notify({ title = title, description = description, type = type, duration = 5000 })
@@ -22,6 +25,86 @@ local function toggleSpectate(targetId)
     
     notify("Admin Menu", isSpectating and "👁 Now Spectating Player ID: " .. targetId or "📌 Stopped Spectating.", "info")
 end
+
+function DrawLaserAndDelete()
+    local playerPed = PlayerPedId()
+    local camCoords = GetGameplayCamCoord()
+    local camRotation = GetGameplayCamRot(2)
+    local direction = RotToDirection(camRotation)
+    local destination = camCoords + (direction * 100.0) -- 100m range
+    
+    -- Draw laser
+    DrawLine(camCoords, destination, 255, 0, 0, 255) -- Red laser
+    
+    -- Check for entity
+    local rayHandle = StartShapeTestRay(camCoords, destination, -1, playerPed, 0)
+    local _, hit, hitCoords, _, entityHit = GetShapeTestResult(rayHandle)
+    
+    if hit then
+        -- Draw marker at hit position
+        DrawMarker(28, hitCoords, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.2, 0.2, 0.2, 255, 0, 0, 100, false, true, 2, nil, nil, false)
+        
+        -- Show help text
+        BeginTextCommandDisplayHelp("STRING")
+        AddTextComponentSubstringPlayerName("Press ~INPUT_ATTACK~ to delete entity")
+        EndTextCommandDisplayHelp(0, false, true, -1)
+        
+        -- Delete on attack button
+        if IsControlJustPressed(0, 24) then -- INPUT_ATTACK (Left Click)
+            if DoesEntityExist(entityHit) then
+                local entityType = GetEntityType(entityHit)
+                local model = GetEntityModel(entityHit)
+                
+                -- Check if entity is valid for deletion
+                if entityType ~= 0 and entityType ~= 1 then -- Not a player or vehicle
+                    DeleteEntity(entityHit)
+                    lib.notify({
+                        title = "Admin Menu",
+                        description = "Entity deleted successfully",
+                        type = "success"
+                    })
+                else
+                    lib.notify({
+                        title = "Admin Menu",
+                        description = "Cannot delete players or vehicles",
+                        type = "error"
+                    })
+                end
+            end
+        end
+    end
+end
+
+RegisterNetEvent('adminmenu:toggleLaser')
+AddEventHandler('adminmenu:toggleLaser', function()
+    laserEnabled = not laserEnabled
+    
+    if laserEnabled then
+        lib.notify({
+            title = "Admin Menu",
+            description = "Laser delete mode enabled",
+            type = "success"
+        })
+        
+        laserThread = CreateThread(function()
+            while laserEnabled do
+                DrawLaserAndDelete()
+                Wait(0)
+            end
+        end)
+    else
+        if laserThread then
+            TerminateThread(laserThread)
+            laserThread = nil
+        end
+        
+        lib.notify({
+            title = "Admin Menu",
+            description = "Laser delete mode disabled",
+            type = "info"
+        })
+    end
+end)
 
 RegisterNetEvent("adminmenu:receivePermissions")
 AddEventHandler("adminmenu:receivePermissions", function(permissions)
@@ -145,61 +228,76 @@ end)
 
 RegisterNetEvent("adminmenu:noclip")
 AddEventHandler("adminmenu:noclip", function()
+    local playerPed = PlayerPedId()
+    
+    if not DoesEntityExist(playerPed) then
+        lib.notify({ title = "Admin Menu", description = "❌ Player ped not found!", type = "error" })
+        return
+    end
+
     isNoClipActive = not isNoClipActive
 
     if isNoClipActive then
-        -- Aktifkan NoClip
-        SetEntityAlpha(cache.ped, 150, false) -- Set transparansi (alpha = 150)
-        SetEntityCollision(cache.ped, false, false) -- Nonaktifkan collision
-        FreezeEntityPosition(cache.ped, true) -- Bekukan posisi ped
-        SetEntityInvincible(cache.ped, true) -- Buat ped tidak bisa mati
+        -- Enable NoClip
+        SetEntityAlpha(playerPed, 150, false)
+        SetEntityCollision(playerPed, false, false)
+        FreezeEntityPosition(playerPed, true)
+        SetEntityInvincible(playerPed, true)
+        SetEntityVisible(playerPed, false, false)
+        NetworkSetEntityInvisibleToNetwork(playerPed, true)
 
-        -- Sembunyikan player dari player lain
-        SetEntityVisible(cache.ped, false, false) -- Sembunyikan dari diri sendiri
-        NetworkSetEntityInvisibleToNetwork(cache.ped, true) -- Sembunyikan dari jaringan
-
-        -- Mulai loop NoClip
-        CreateThread(function()
+        -- Start NoClip thread
+        noclipThread = CreateThread(function()
             while isNoClipActive do
-                local playerCoords = GetEntityCoords(cache.ped)
-                local speed = 1.0 -- Kecepatan NoClip
-
-                -- Dapatkan rotasi kamera
-                local camRot = GetGameplayCamRot(2) -- 2 = Rotasi dalam derajat
-                local forwardVector = RotToDirection(camRot) -- Vektor depan berdasarkan rotasi kamera
-
-                -- Kontrol pergerakan NoClip
-                if IsControlPressed(0, 32) then -- W (Maju)
-                    playerCoords = playerCoords + forwardVector * speed
+                local playerCoords = GetEntityCoords(playerPed)
+                local speed = 1.0 -- Base speed
+                
+                -- Increase speed when holding Shift
+                if IsControlPressed(0, 21) then -- Left Shift
+                    speed = speed * 2.5
                 end
-                if IsControlPressed(0, 33) then -- S (Mundur)
-                    playerCoords = playerCoords - forwardVector * speed
+
+                -- Get camera rotation
+                local camRot = GetGameplayCamRot(2)
+                local forwardVector = RotToDirection(camRot)
+
+                -- Movement controls
+                if IsControlPressed(0, 32) then -- W (Forward)
+                    playerCoords = playerCoords + (forwardVector * speed)
                 end
-                if IsControlPressed(0, 22) then -- Space (Naik)
+                if IsControlPressed(0, 33) then -- S (Backward)
+                    playerCoords = playerCoords - (forwardVector * speed)
+                end
+                if IsControlPressed(0, 22) then -- Space (Up)
                     playerCoords = playerCoords + vector3(0, 0, speed)
                 end
-                if IsControlPressed(0, 36) then -- Ctrl (Turun)
+                if IsControlPressed(0, 36) then -- Ctrl (Down)
                     playerCoords = playerCoords - vector3(0, 0, speed)
                 end
 
-                -- Terapkan posisi baru
-                SetEntityCoordsNoOffset(cache.ped, playerCoords.x, playerCoords.y, playerCoords.z, false, false, false)
-
-                -- Tunggu frame berikutnyaWait(0)
+                -- Apply new position
+                SetEntityCoordsNoOffset(playerPed, playerCoords.x, playerCoords.y, playerCoords.z, false, false, false)
+                
+                -- Small delay to prevent crashing
+                Wait(0)
             end
         end)
 
         lib.notify({ title = "Admin Menu", description = "✈️ NoClip Enabled", type = "success" })
     else
-        -- Nonaktifkan NoClip
-        ResetEntityAlpha(cache.ped) -- Kembalikan transparansi ke normal
-        SetEntityCollision(cache.ped, true, true) -- Aktifkan collision
-        FreezeEntityPosition(cache.ped, false) -- Lepaskan pembekuan posisi
-        SetEntityInvincible(cache.ped, false) -- Buat ped bisa mati
+        -- Disable NoClip
+        if noclipThread then
+            -- Terminate the thread properly
+            Citizen.InvokeNative(0x9FBDA379383A52A4, noclipThread) -- Native to terminate thread
+            noclipThread = nil
+        end
 
-        -- Tampilkan kembali player ke player lain
-        SetEntityVisible(cache.ped, true, false) -- Tampilkan ke diri sendiri
-        NetworkSetEntityInvisibleToNetwork(cache.ped, false) -- Tampilkan di jaringan
+        ResetEntityAlpha(playerPed)
+        SetEntityCollision(playerPed, true, true)
+        FreezeEntityPosition(playerPed, false)
+        SetEntityInvincible(playerPed, false)
+        SetEntityVisible(playerPed, true, false)
+        NetworkSetEntityInvisibleToNetwork(playerPed, false)
 
         lib.notify({ title = "Admin Menu", description = "❌ NoClip Disabled", type = "success" })
     end

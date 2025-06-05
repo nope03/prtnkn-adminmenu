@@ -20,9 +20,9 @@ AddEventHandler("adminmenu:updateTime", function(hour, minute)
 end)
 
 -- Loop yang memperbarui waktu setiap detik
-Citizen.CreateThread(function()
+CreateThread(function()
     while true do
-        Citizen.Wait(1000)
+        Wait(1000)
         NetworkOverrideClockTime(currentHour, currentMinute, 0)
     end
 end)

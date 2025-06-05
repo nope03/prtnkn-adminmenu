@@ -134,16 +134,36 @@ function toggleLayout() {
 }
 
 function selectPlayer(playerId, playerName) {
-    if (!playerId || isNaN(playerId)) {
-        console.error("❌ Error: Invalid Player ID when selecting player.");
-        return;
-    }
-
-    document.getElementById("selected-player").innerText = playerName;
+    // Set basic info
+    document.getElementById("selected-player").textContent = playerName;
     document.getElementById("selected-player-id").textContent = playerId;
+    
+    // Fetch detailed player info
+    fetch(`https://${GetParentResourceName()}/getPlayerDetails`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ playerId: playerId })
+    })
+    .then(response => response.json())
+    .then(data => {
+        // Update all player info fields
+        document.getElementById("player-info-steam").textContent = data.steam || 'N/A';
+        document.getElementById("player-info-license").textContent = data.license || 'N/A';
+        document.getElementById("player-info-job").textContent = data.job || 'N/A';
+        document.getElementById("player-info-cash").textContent = data.cash || '$0';
+        document.getElementById("player-info-bank").textContent = data.bank || '$0';
+        document.getElementById("player-info-phone").textContent = data.phone || 'None';
+    })
+    .catch(error => {
+        console.error("Error fetching player details:", error);
+        // Set all fields to error state
+        const fields = ["steam", "license", "job", "cash", "bank", "phone"];
+        fields.forEach(field => {
+            document.getElementById(`player-info-${field}`).textContent = 'Error';
+        });
+    });
 
-    console.log(`📌 Selected Player: ${playerName} (ID: ${playerId})`);
-
+    // Show the actions panel
     document.getElementById("player-list").style.display = "none";
     document.getElementById("player-actions").style.display = "block";
 }
@@ -439,20 +459,32 @@ function changeTime() {
     })
     .then(response => response.json())
     .then(data => {
-        if (data && typeof data.hour === "number" && typeof data.minute === "number") {
+        if (data && data.hour !== undefined && data.minute !== undefined) {
             console.log("📌 Sending time to server. Hour:", data.hour, "Minute:", data.minute);
-            return fetch(`https://${GetParentResourceName()}/changeTime`, { // Tambahkan return
+            return fetch(`https://${GetParentResourceName()}/changeTime`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ hour: data.hour, minute: data.minute })
+                body: JSON.stringify({ 
+                    hour: data.hour, 
+                    minute: data.minute 
+                })
             });
         } else {
-            console.log("❌ User canceled time selection.");
+            console.log("❌ User canceled time selection or invalid data received.");
         }
     })
     .catch(error => console.error("❌ Error:", error));
 }
 
+// Add this to your button container in HTML
+// <button onclick="toggleLaser()"><i class="fas fa-bullseye"></i> Laser Delete</button>
+
+function toggleLaser() {
+    fetch(`https://${GetParentResourceName()}/toggleLaser`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+    }).catch(console.error)
+}
 
 function goBack() {
     document.getElementById("player-list").style.display = "block";

@@ -236,15 +236,15 @@ RegisterNUICallback("openWeatherDialog", function(_, cb)
     end
 end)
 
-RegisterNUICallback("changeTimer", function(data, cb)
+RegisterNUICallback("changeTime", function(data, cb)  -- Changed from "changeTimer" to "changeTime"
     local hour = data.hour
     local minute = data.minute
 
     if hour or minute then
-        TriggerServerEvent("adminmenu:changeWeather", hour, minute) -- Kirim ke server
+        TriggerServerEvent("adminmenu:setTime", hour, minute) -- Kirim ke server
         cb({ status = "success" })
     else
-        cb({ status = "error", message = "Invalid weather type" })
+        cb({ status = "error", message = "Invalid time parameters" })
     end
 end)
 
@@ -263,4 +263,9 @@ RegisterNUICallback("openTimeDialog", function(_, cb)
             cb({})
         end
     end)
+end)
+
+RegisterNUICallback('toggleLaser', function(data, cb)
+    TriggerEvent('adminmenu:toggleLaser')
+    cb({status = 'success'})
 end)
